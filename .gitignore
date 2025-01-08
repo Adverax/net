@@ -1,0 +1,8 @@
+.vscode
+.idea
+download
+*.exe
+*.syso
+*.zip
+*.dll
+*.so
