@@ -1,11 +1,12 @@
 package net
 
-import (
-	"encoding/json"
-	"fmt"
-)
+import "fmt"
 
 type DefaultCodec struct{}
+
+func (that *DefaultCodec) Headers() map[string]string {
+	return nil
+}
 
 func (that *DefaultCodec) Encode(request interface{}) ([]byte, error) {
 	if request == nil {
@@ -30,25 +31,4 @@ func (that *DefaultCodec) Decode(data []byte, response interface{}) error {
 	return nil
 }
 
-type JsonCodec struct{}
-
-func (that *JsonCodec) Encode(request interface{}) ([]byte, error) {
-	if request == nil {
-		return []byte("{}"), nil
-	}
-
-	return json.Marshal(request)
-}
-
-func (that *JsonCodec) Decode(data []byte, response interface{}) error {
-	if len(data) == 0 {
-		return nil
-	}
-
-	return json.Unmarshal(data, response)
-}
-
-var (
-	CodecDefault = &DefaultCodec{}
-	CodecJson    = &JsonCodec{}
-)
+var CodecDefault Codec = &DefaultCodec{}

@@ -13,23 +13,28 @@ import (
 type Codec interface {
 	Encode(interface{}) ([]byte, error)
 	Decode([]byte, interface{}) error
+	Headers() map[string]string
 }
 
 type value struct {
-	value interface{}
+	data  interface{}
 	codec Codec
 }
 
 func (that *value) encode() ([]byte, error) {
-	return that.codec.Encode(that.value)
+	return that.codec.Encode(that.data)
 }
 
 func (that *value) decode(data []byte) error {
-	if that.value == nil {
+	if that.data == nil {
 		return nil
 	}
 
-	return that.codec.Decode(data, that.value)
+	return that.codec.Decode(data, that.data)
+}
+
+func (that *value) Headers() map[string]string {
+	return that.codec.Headers()
 }
 
 type Validator interface {
@@ -44,7 +49,7 @@ func (f ValidatorFunc) Validate(status int, body []byte) error {
 
 type Request struct {
 	url       string
-	method    string
+	method    HttpMethod
 	params    map[string]string
 	headers   map[string]string
 	messenger Messenger
@@ -67,26 +72,42 @@ func NewRequest() *Request {
 	}
 }
 
-func (that *Request) Request(messenger Messenger, method string, url string) *Request {
+func (that *Request) WithCodec(codec Codec) *Request {
+	that.body.codec = codec
+	that.response.codec = codec
+	return that
+}
+
+func (that *Request) WithRequest(messenger Messenger, method HttpMethod, url string) *Request {
 	that.messenger = messenger
 	that.method = method
 	that.url = ensureProtocol(url)
 	return that
 }
 
-func (that *Request) Body(body interface{}, codec Codec) *Request {
-	that.body.value = body
+func (that *Request) WithBody(body interface{}) *Request {
+	that.body.data = body
+	return that
+}
+
+func (that *Request) WithBodyEx(body interface{}, codec Codec) *Request {
+	that.body.data = body
 	that.body.codec = codec
 	return that
 }
 
-func (that *Request) Response(response interface{}, codec Codec) *Request {
-	that.response.value = response
+func (that *Request) WithResponse(response interface{}) *Request {
+	that.response.data = response
+	return that
+}
+
+func (that *Request) WithResponseEx(response interface{}, codec Codec) *Request {
+	that.response.data = response
 	that.response.codec = codec
 	return that
 }
 
-func (that *Request) Param(key, value string) *Request {
+func (that *Request) WithParam(key, value string) *Request {
 	if that.params == nil {
 		that.params = make(map[string]string)
 	}
@@ -94,7 +115,7 @@ func (that *Request) Param(key, value string) *Request {
 	return that
 }
 
-func (that *Request) Params(params map[string]string) *Request {
+func (that *Request) WithParams(params map[string]string) *Request {
 	if that.params == nil {
 		that.params = make(map[string]string)
 	}
@@ -104,7 +125,7 @@ func (that *Request) Params(params map[string]string) *Request {
 	return that
 }
 
-func (that *Request) Header(key, val string) *Request {
+func (that *Request) WithHeader(key, val string) *Request {
 	if that.headers == nil {
 		that.headers = make(map[string]string)
 	}
@@ -112,7 +133,7 @@ func (that *Request) Header(key, val string) *Request {
 	return that
 }
 
-func (that *Request) Headers(hs map[string]string) *Request {
+func (that *Request) WithHeaders(hs map[string]string) *Request {
 	if that.headers == nil {
 		that.headers = make(map[string]string)
 	}
@@ -122,12 +143,12 @@ func (that *Request) Headers(hs map[string]string) *Request {
 	return that
 }
 
-func (that *Request) Raw(raw *[]byte) *Request {
+func (that *Request) WithRaw(raw *[]byte) *Request {
 	that.raw = raw
 	return that
 }
 
-func (that *Request) Validator(validator Validator) *Request {
+func (that *Request) WithValidator(validator Validator) *Request {
 	that.validator = validator
 	return that
 }
@@ -165,7 +186,8 @@ func (that *Request) sendContext(
 		if err != nil {
 			return fmt.Errorf("read response: %w", err)
 		}
-		defer resp.Body.Close()
+		resp.Body.Close()
+		resp.Body = io.NopCloser(bytes.NewBuffer(body))
 	}
 
 	err = that.validator.Validate(resp.StatusCode, body)
@@ -191,13 +213,20 @@ func (that *Request) newRequest(ctx context.Context) (*http.Request, error) {
 		return nil, err
 	}
 
-	request, err := http.NewRequestWithContext(ctx, that.method, that.getUrl(), bytes.NewBuffer(body))
+	request, err := http.NewRequestWithContext(ctx, string(that.method), that.getUrl(), bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
 
 	if that.headers != nil {
 		for key, val := range that.headers {
+			request.Header.Set(key, val)
+		}
+	}
+
+	headers := that.body.Headers()
+	if headers != nil {
+		for key, val := range headers {
 			request.Header.Set(key, val)
 		}
 	}
@@ -217,7 +246,7 @@ func (that *Request) checkRequiredFields() error {
 
 	switch that.method {
 	case http.MethodPost:
-		if that.body.value == nil {
+		if that.body.data == nil {
 			return ErrFieldBodyRequired
 		}
 	}
