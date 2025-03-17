@@ -39,13 +39,14 @@ func TestRequest(t *testing.T) {
 			Body:       io.NopCloser(bytes.NewBuffer([]byte(`["a","b","c"]`))),
 		}, nil)
 
-	err := msngr.NewRequest().
+	response, err := msngr.NewRequest().
 		WithRequest(MethodPost, "http://example.com").
 		WithBody(req).
 		WithResponse(&resp).
 		Send()
 	require.NoError(t, err)
 	require.NotNil(t, msngr.req)
+	require.Equal(t, http.StatusOK, response.StatusCode())
 	body, err := io.ReadAll(msngr.req.Body)
 	require.NoError(t, err)
 	assert.Equal(t, []byte(`["a","b","c"]`), body)

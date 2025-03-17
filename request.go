@@ -166,8 +166,8 @@ func (that *Request) WithHeaders(hs map[string]string) *Request {
 	return that
 }
 
-func (that *Request) Send() error {
-	return that.SendContext(context.Background())
+func (that *Request) Send() (Response, error) {
+	return that, that.SendContext(context.Background())
 }
 
 func (that *Request) SendContext(ctx context.Context) error {
