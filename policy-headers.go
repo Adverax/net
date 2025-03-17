@@ -5,6 +5,7 @@ import (
 	"github.com/adverax/policy"
 )
 
+// PolicyWithHeaders is policy with headers
 type PolicyWithHeaders struct {
 	policy  policy.Policy
 	headers map[string]string
