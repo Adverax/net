@@ -16,27 +16,6 @@ type Codec interface {
 	Headers() map[string]string
 }
 
-type value struct {
-	data  interface{}
-	codec Codec
-}
-
-func (that *value) encode() ([]byte, error) {
-	return that.codec.Encode(that.data)
-}
-
-func (that *value) decode(data []byte) error {
-	if that.data == nil {
-		return nil
-	}
-
-	return that.codec.Decode(data, that.data)
-}
-
-func (that *value) Headers() map[string]string {
-	return that.codec.Headers()
-}
-
 type ResponseHandler interface {
 	Handle(ctx context.Context, resp Response) error
 }
@@ -94,7 +73,25 @@ func (that *Request) ResponseBody() []byte {
 }
 
 func (that *Request) Decode(data interface{}) error {
-	return that.codec.Decode(that.respBody, data)
+	err := that.codec.Decode(that.respBody, data)
+	if err != nil {
+		return fmt.Errorf("decode response: %w", err)
+	}
+
+	err = that.validate(data)
+	if err != nil {
+		return fmt.Errorf("validate response: %w", err)
+	}
+
+	return nil
+}
+
+func (that *Request) validate(data interface{}) error {
+	if that.validator == nil {
+		return nil
+	}
+
+	return that.validator.Validate(data)
 }
 
 func (that *Request) WithMessenger(messenger Messenger) *Request {
@@ -272,26 +269,13 @@ func (that *Request) handleResponse(ctx context.Context) error {
 			return nil
 		}
 
-		err := that.codec.Decode(that.respBody, that.response)
+		err := that.Decode(that.response)
 		if err != nil {
-			return fmt.Errorf("decode response: %w", err)
-		}
-
-		err = that.validate(that.response)
-		if err != nil {
-			return fmt.Errorf("validate response: %w", err)
+			return err
 		}
 	}
 
 	return nil
-}
-
-func (that *Request) validate(data interface{}) error {
-	if that.validator == nil {
-		return nil
-	}
-
-	return that.validator.Validate(data)
 }
 
 func (that *Request) checkRequiredFields() error {
