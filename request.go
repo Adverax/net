@@ -53,6 +53,16 @@ type Response interface {
 	Decode(data interface{}) error
 }
 
+type Validator interface {
+	Validate(data interface{}) error
+}
+
+type ValidatorFunc func(data interface{}) error
+
+func (fn ValidatorFunc) Validate(data interface{}) error {
+	return fn(data)
+}
+
 type Request struct {
 	url        string
 	method     HttpMethod
@@ -65,6 +75,7 @@ type Request struct {
 	handlers   map[int]ResponseHandler
 	respBody   []byte
 	statusCode int
+	validator  Validator
 }
 
 func NewRequest() *Request {
@@ -166,6 +177,11 @@ func (that *Request) WithHeaders(hs map[string]string) *Request {
 	return that
 }
 
+func (that *Request) WithValidator(validator Validator) *Request {
+	that.validator = validator
+	return that
+}
+
 func (that *Request) Send() (Response, error) {
 	return that, that.SendContext(context.Background())
 }
@@ -256,10 +272,26 @@ func (that *Request) handleResponse(ctx context.Context) error {
 			return nil
 		}
 
-		return that.codec.Decode(that.respBody, that.response)
+		err := that.codec.Decode(that.respBody, that.response)
+		if err != nil {
+			return fmt.Errorf("decode response: %w", err)
+		}
+
+		err = that.validate(that.response)
+		if err != nil {
+			return fmt.Errorf("validate response: %w", err)
+		}
 	}
 
 	return nil
+}
+
+func (that *Request) validate(data interface{}) error {
+	if that.validator == nil {
+		return nil
+	}
+
+	return that.validator.Validate(data)
 }
 
 func (that *Request) checkRequiredFields() error {

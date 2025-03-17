@@ -45,21 +45,3 @@ func (that *messenger) Request(ctx context.Context, request *http.Request) (resp
 
 	return delivery.Response, err
 }
-
-func NewMessenger(client HttpClient, p policy.Policy, codec Codec) Messenger {
-	if client == nil {
-		client = http.DefaultClient
-	}
-	if p == nil {
-		p = policy.NewDefault()
-	}
-	if codec == nil {
-		codec = CodecDefault
-	}
-
-	return &messenger{
-		client: client,
-		policy: p,
-		codec:  codec,
-	}
-}
