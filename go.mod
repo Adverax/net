@@ -4,7 +4,7 @@ go 1.23.4
 
 require (
 	github.com/adverax/log v1.0.15
-	github.com/adverax/policy v0.0.0-20250217134807-ff31059a7f02
+	github.com/adverax/policy v1.0.0
 	github.com/stretchr/testify v1.10.0
 )
 
