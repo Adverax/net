@@ -5,19 +5,19 @@ import (
 	"github.com/adverax/policy"
 )
 
-type WithHeadersExecution struct {
+type PolicyWithHeaders struct {
 	policy  policy.Policy
 	headers map[string]string
 }
 
-func NewWithHeadersExecution(policy policy.Policy, headers map[string]string) *WithHeadersExecution {
-	return &WithHeadersExecution{
+func NewPolicyWithHeaders(policy policy.Policy, headers map[string]string) *PolicyWithHeaders {
+	return &PolicyWithHeaders{
 		policy:  policy,
 		headers: headers,
 	}
 }
 
-func (that *WithHeadersExecution) Execute(ctx context.Context, action policy.Action) error {
+func (that *PolicyWithHeaders) Execute(ctx context.Context, action policy.Action) error {
 	delivery := HttpDeliveryFromContext(ctx)
 	if delivery != nil {
 		for key, val := range that.headers {

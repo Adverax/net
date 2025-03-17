@@ -10,21 +10,21 @@ import (
 	"time"
 )
 
-// WithLogging is a policy that logs the action before executing it.
-type WithLogging struct {
+// PolicyWithLogging is a policy that logs the action before executing it.
+type PolicyWithLogging struct {
 	policy.Policy
 	logger  log.Logger
 	entity  string
 	headers bool
 }
 
-func NewWithLogging(
+func NewPolicyWithLogging(
 	policy policy.Policy,
 	logger log.Logger,
 	entity string,
 	headers bool,
-) *WithLogging {
-	return &WithLogging{
+) *PolicyWithLogging {
+	return &PolicyWithLogging{
 		Policy:  policy,
 		logger:  logger,
 		entity:  entity,
@@ -32,7 +32,7 @@ func NewWithLogging(
 	}
 }
 
-func (that *WithLogging) Execute(ctx context.Context, action policy.Action) error {
+func (that *PolicyWithLogging) Execute(ctx context.Context, action policy.Action) error {
 	delivery := HttpDeliveryFromContext(ctx)
 	if delivery == nil {
 		return that.Policy.Execute(ctx, action)
@@ -48,7 +48,7 @@ func (that *WithLogging) Execute(ctx context.Context, action policy.Action) erro
 	return err
 }
 
-func (that *WithLogging) logRequest(
+func (that *PolicyWithLogging) logRequest(
 	ctx context.Context,
 	request *http.Request,
 ) {
@@ -75,7 +75,7 @@ func (that *WithLogging) logRequest(
 		Info(ctx, "Request")
 }
 
-func (that *WithLogging) logResponse(
+func (that *PolicyWithLogging) logResponse(
 	ctx context.Context,
 	resp *http.Response,
 	elapsed time.Duration,
@@ -100,7 +100,7 @@ func (that *WithLogging) logResponse(
 		Info(ctx, "Response")
 }
 
-func (that *WithLogging) getHeaders(
+func (that *PolicyWithLogging) getHeaders(
 	request *http.Request,
 ) string {
 	var buffer bytes.Buffer

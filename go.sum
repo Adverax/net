@@ -1,9 +1,9 @@
-github.com/adverax/enums v0.0.0-20250122082856-05538905a8a3 h1:8kGnvAVdkYiIGPuGFasNrt7DRqiiBk727bQiiXUDeow=
-github.com/adverax/enums v0.0.0-20250122082856-05538905a8a3/go.mod h1:Dr8vCRZPTwPLFDFvl7Uk6An49YpTBr56DACJB7s2lxY=
+github.com/adverax/enums v1.0.0 h1:rw7eCb2IJxywX7kcDuMU4y+qCM3RE5rHYsLBMk95tLQ=
+github.com/adverax/enums v1.0.0/go.mod h1:Dr8vCRZPTwPLFDFvl7Uk6An49YpTBr56DACJB7s2lxY=
 github.com/adverax/log v1.0.15 h1:tY9dvW47wpw21bjEXl+203/kmkRYptmekIFMSWNlmZU=
 github.com/adverax/log v1.0.15/go.mod h1:iOjrJYl57Awg7xtJnM3iMZ2Jwzv1AB7LNcyTCa06/Zo=
-github.com/adverax/policy v1.0.0 h1:WrJhAleR1FUZKvrGjUERyk8O+0QCGiduuJMrn7DqA0I=
-github.com/adverax/policy v1.0.0/go.mod h1:g10QpqZwWuYy8DgxyBFDiF4tu9PC9nfXSjEhwUtyy+Y=
+github.com/adverax/policy v1.0.1 h1:0+I/qFnDYDGKPOa/JWKQrW7J2mORe9StN+VfWcKyVM4=
+github.com/adverax/policy v1.0.1/go.mod h1:g10QpqZwWuYy8DgxyBFDiF4tu9PC9nfXSjEhwUtyy+Y=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
