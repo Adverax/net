@@ -22,6 +22,12 @@ func (that *MessengerMock) Request(ctx context.Context, request *http.Request) (
 	return args.Get(0).(*http.Response), args.Error(1)
 }
 
+func (that *MessengerMock) NewRequest() *Request {
+	return NewRequest().
+		WithMessenger(that).
+		WithCodec(CodecJson)
+}
+
 func TestRequest(t *testing.T) {
 	req := []string{"a", "b", "c"}
 	var resp []string
@@ -33,9 +39,8 @@ func TestRequest(t *testing.T) {
 			Body:       io.NopCloser(bytes.NewBuffer([]byte(`["a","b","c"]`))),
 		}, nil)
 
-	err := NewRequest().
-		WithRequest(msngr, MethodPost, "http://example.com").
-		WithCodec(CodecJson).
+	err := msngr.NewRequest().
+		WithRequest(MethodPost, "http://example.com").
 		WithBody(req).
 		WithResponse(&resp).
 		Send()

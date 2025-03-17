@@ -86,13 +86,17 @@ func (that *Request) Decode(data interface{}) error {
 	return that.codec.Decode(that.respBody, data)
 }
 
+func (that *Request) WithMessenger(messenger Messenger) *Request {
+	that.messenger = messenger
+	return that
+}
+
 func (that *Request) WithCodec(codec Codec) *Request {
 	that.codec = codec
 	return that
 }
 
-func (that *Request) WithRequest(messenger Messenger, method HttpMethod, url string) *Request {
-	that.messenger = messenger
+func (that *Request) WithRequest(method HttpMethod, url string) *Request {
 	that.method = method
 	that.url = ensureProtocol(url)
 	return that

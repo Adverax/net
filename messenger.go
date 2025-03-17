@@ -13,11 +13,19 @@ type HttpClient interface {
 // Messenger is abstract http manager
 type Messenger interface {
 	Request(ctx context.Context, request *http.Request) (resp *http.Response, err error)
+	NewRequest() *Request
 }
 
 type messenger struct {
 	client HttpClient
 	policy policy.Policy
+	codec  Codec
+}
+
+func (that *messenger) NewRequest() *Request {
+	return NewRequest().
+		WithMessenger(that).
+		WithCodec(that.codec)
 }
 
 func (that *messenger) Request(ctx context.Context, request *http.Request) (resp *http.Response, err error) {
@@ -38,16 +46,20 @@ func (that *messenger) Request(ctx context.Context, request *http.Request) (resp
 	return delivery.Response, err
 }
 
-func NewMessenger(client HttpClient, p policy.Policy) Messenger {
+func NewMessenger(client HttpClient, p policy.Policy, codec Codec) Messenger {
 	if client == nil {
 		client = http.DefaultClient
 	}
 	if p == nil {
 		p = policy.NewDefault()
 	}
+	if codec == nil {
+		codec = CodecDefault
+	}
 
 	return &messenger{
 		client: client,
 		policy: p,
+		codec:  codec,
 	}
 }
